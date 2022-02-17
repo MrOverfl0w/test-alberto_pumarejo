@@ -11,8 +11,12 @@ class ChuckNorrisController extends Controller
         $array = [];
         $async_proc = Pool::create();
         for ($i = 0; $i < 15; $i++){
-            $async_proc->add(function() use ($array){
-                return $this->chucknorrisjokes($array);
+            $async_proc->add(function() use (&$array, &$i){
+                $data = $this->broma();
+                if ( in_array( $data, $array ) ){
+                    $i--;
+                }
+                return $data;
             })->then(function(array $output) use (&$array){
                 $array[] = $output;
             });
@@ -21,14 +25,6 @@ class ChuckNorrisController extends Controller
         $async_proc->wait();
         $result = json_encode($array);
         return $result;
-    }
-
-    private function chucknorrisjokes(array $array){
-        $data = $this->broma();
-        if ( in_array( $data, $array ) ){
-            return chucknorrisjokes($array);
-        }
-        return $data;
     }
 
     private function broma(){
